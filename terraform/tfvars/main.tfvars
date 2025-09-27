@@ -2,7 +2,7 @@
 aws_region = "us-east-1"
 
 # S3 Bucket Configuration (must be globally unique)
-bucket_name = "reflexology-maria-website-2024"
+bucket_name = "reflexology-maria-website-2025"
 
 # GitHub Repository Configuration (for OIDC)
 github_repo = "mtzanida/reflexology"

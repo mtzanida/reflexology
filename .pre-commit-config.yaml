@@ -4,6 +4,11 @@ repos:
    hooks:
      - id: end-of-file-fixer
      - id: trailing-whitespace
+     - id: check-yaml
+     - id: check-json
+     - id: check-added-large-files
+     - id: detect-private-key
+     - id: check-merge-conflict
  - repo: https://github.com/antonbabenko/pre-commit-terraform
    rev: v1.72.2
    hooks:
@@ -11,3 +16,10 @@ repos:
        files: \.tf$
      - id: terraform_validate
        files: \.tf$
+     - id: terraform_tflint
+       files: \.tf$
+ - repo: https://github.com/Yelp/detect-secrets
+   rev: v1.4.0
+   hooks:
+     - id: detect-secrets
+       args: ['--baseline', '.secrets.baseline']

@@ -1,15 +1,27 @@
-name: Deploy to S3
+name: Deploy Website
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  ENVIRONMENT: ${{ github.event.inputs.environment || 'production' }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
     permissions:
       id-token: write
       contents: read
@@ -36,4 +48,14 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
     
     - name: Upload to S3
-      run: aws s3 sync bucket-contents/ s3://${{ vars.BUCKET_NAME }} --delete
+      run: |
+        echo "🚀 Deploying to ${{ env.ENVIRONMENT }} environment"
+        aws s3 sync bucket-contents/ s3://${{ vars.BUCKET_NAME }} --delete
+    
+    - name: Invalidate CloudFront
+      run: |
+        DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${{ vars.BUCKET_NAME }}.s3.amazonaws.com'].Id" --output text)
+        if [ ! -z "$DISTRIBUTION_ID" ]; then
+          echo "🔄 Invalidating CloudFront distribution: $DISTRIBUTION_ID"
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+        fi
