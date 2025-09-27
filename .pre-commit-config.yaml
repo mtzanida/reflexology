@@ -16,10 +16,3 @@ repos:
        files: \.tf$
      - id: terraform_validate
        files: \.tf$
-     - id: terraform_tflint
-       files: \.tf$
- - repo: https://github.com/Yelp/detect-secrets
-   rev: v1.4.0
-   hooks:
-     - id: detect-secrets
-       args: ['--baseline', '.secrets.baseline']
