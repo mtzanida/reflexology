@@ -43,7 +43,7 @@ This repository provides a complete Infrastructure-as-Code solution with automat
 
 ### How to Use
 
-#### Option 1: Automated Deployment with Terraform
+#### Option 1: Automated Deployment with Terraform (preffered)
 
 1. **Clone the repository** and edit website files in `bucket-contents/` with your details.
 2. **Configure Terraform**:
@@ -64,7 +64,7 @@ This repository provides a complete Infrastructure-as-Code solution with automat
 4. (Optional) **Set up CloudFront and ACM** for HTTPS and custom domain support.
 5. **Go live!** Your site is now publicly accessible.
 
-### Zero-Cost Hosting Guide
+### Zero-Cost Hosting Guide 
 
 You can host this website completely free within AWS Free Tier:
 
