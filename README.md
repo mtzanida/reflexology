@@ -48,10 +48,11 @@ This repository provides a complete Infrastructure-as-Code solution with automat
 1. **Clone the repository** and edit website files in `bucket-contents/` with your details.
 2. **Configure Terraform**:
    - Navigate to the `terraform/` directory
-   - Copy `terraform.tfvars.example` to `terraform.tfvars` and update with your values
+   - Update `terraform/tfvars/main.tfvars` with your values
+   - The tfvars directory structure supports multiple environments (e.g., `dev.tfvars`, `staging.tfvars`, `prod.tfvars`)
    - Run `terraform init` to initialize
-   - Run `terraform plan` to review changes
-   - Run `terraform apply` to deploy infrastructure
+   - Run `terraform plan -var-file="tfvars/main.tfvars"` to review changes
+   - Run `terraform apply -var-file="tfvars/main.tfvars"` to deploy infrastructure
 3. **Upload website files**: The Terraform configuration will create the S3 bucket and upload your website files automatically.
 4. **Go live!** Your site is now publicly accessible.
 
