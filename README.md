@@ -34,6 +34,15 @@ This repository provides a complete Infrastructure-as-Code solution with automat
   - Benefits and applications
   - Contact information
 
+### Prerequisites
+
+- **AWS Account** with Free Tier eligibility
+- **GitHub Account** for repository hosting and CI/CD
+- **Terraform** >= 1.0 installed locally
+- **AWS CLI** configured with appropriate credentials
+- **Git** installed for version control
+- **Domain name** (optional, for custom domain setup)
+
 ### AWS Architecture
 
 - **Amazon S3**: Static website hosting
@@ -54,7 +63,14 @@ This repository provides a complete Infrastructure-as-Code solution with automat
    - Run `terraform plan -var-file="tfvars/main.tfvars"` to review changes
    - Run `terraform apply -var-file="tfvars/main.tfvars"` to deploy infrastructure
 3. **Upload website files**: The Terraform configuration will create the S3 bucket and upload your website files automatically.
-4. **Go live!** Your site is now publicly accessible.
+4. **Set up GitHub secrets and variables**:
+   - Go to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add **Repository secrets**:
+     - `AWS_ROLE_ARN`: The IAM role ARN created by Terraform (from outputs)
+   - Add **Repository variables**:
+     - `BUCKET_NAME`: Your S3 bucket name (same as in tfvars)
+     - `AWS_REGION`: Your AWS region (same as in tfvars, defaults to us-east-1)
+5. **Go live!** Your site is now publicly accessible.
 
 #### Option 2: Manual Setup
 
@@ -151,6 +167,40 @@ This setup provides several advantages over the basic S3 hosting:
 - Better performance through CloudFront's global CDN
 - Professional appearance with your custom domain
 - Improved SEO ranking (search engines prefer HTTPS sites)
+
+## Troubleshooting
+
+### Common Issues
+
+**Terraform apply fails**
+- Check AWS credentials: `aws sts get-caller-identity`
+- Verify IAM permissions for S3, CloudFront, and ACM
+- Ensure bucket name is globally unique
+
+**GitHub Actions deployment fails**
+- Verify `AWS_ROLE_ARN` secret is set correctly
+- Check `BUCKET_NAME` and `AWS_REGION` variables
+- Confirm IAM role has trust relationship with GitHub OIDC
+
+**Website not loading**
+- Check CloudFront distribution status (should be "Deployed")
+- Verify S3 bucket has website files
+- Wait for DNS propagation (up to 48 hours for custom domains)
+
+**SSL certificate issues**
+- Ensure certificate is requested in `us-east-1` region (required for CloudFront)
+- Verify domain validation is complete
+- Check certificate status is "Issued"
+
+**Terraform circular dependency error**
+- This should be resolved with the current configuration
+- If issues persist, run `terraform destroy` and `terraform apply` again
+
+### Getting Help
+
+- Check AWS CloudFormation events for detailed error messages
+- Review GitHub Actions logs for deployment issues
+- Verify all prerequisites are installed and configured
 
 ### Demo
 
