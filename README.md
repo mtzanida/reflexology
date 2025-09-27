@@ -50,6 +50,120 @@ This repository provides a complete Infrastructure-as-Code solution with automat
 - **AWS Certificate Manager (ACM)**: Free SSL certificates
 - **Route 53**: Custom domain management (optional)
 
+## GitHub Actions Workflows
+
+This repository includes five automated workflows that provide comprehensive CI/CD, security, and monitoring capabilities:
+
+### 1. **Branch Protection** (`protect-main.yml`)
+**Trigger**: Push to main branch  
+**Purpose**: Prevents direct pushes to main branch, enforcing PR workflow
+
+**What it does:**
+- Blocks any direct push to main branch
+- Provides clear instructions on how to create a PR instead
+- Ensures all changes go through code review process
+
+**Key Features:**
+- Immediate failure with helpful error messages
+- Commands to fix accidental direct pushes
+- Enforces best practices for collaborative development
+
+### 2. **Terraform Validation** (`terraform-validate.yml`)
+**Trigger**: Pull requests and pushes affecting `terraform/` directory  
+**Purpose**: Validates Terraform code quality and syntax
+
+**What it does:**
+- **Format Check**: Ensures consistent Terraform formatting
+- **Initialization**: Sets up Terraform with required providers
+- **Validation**: Checks syntax and configuration validity
+- **Plan Generation**: Shows what changes will be made (on PRs)
+
+**Key Features:**
+- Runs only when Terraform files change (efficient)
+- Uses proper AWS authentication with OIDC
+- Provides plan output for review before merging
+- Prevents broken infrastructure code from reaching main
+
+### 3. **Website Deployment** (`deploy.yml`)
+**Trigger**: Push to main branch or manual dispatch  
+**Purpose**: Deploys website files to S3 and invalidates CloudFront cache
+
+**What it does:**
+- **Pre-deployment Validation**: Checks secrets, variables, and file structure
+- **S3 Bucket Verification**: Ensures bucket exists and is accessible
+- **File Synchronization**: Uploads website files with validation
+- **CloudFront Invalidation**: Clears CDN cache for immediate updates
+- **Deployment Verification**: Confirms successful deployment
+
+**Key Features:**
+- **Environment Support**: Manual deployment to staging/production
+- **Error Handling**: Comprehensive validation at each step
+- **File Count Verification**: Ensures all files were uploaded
+- **Graceful Degradation**: Continues if CloudFront isn't configured
+- **Detailed Logging**: Clear success/failure indicators
+
+### 4. **Cost Monitoring** (`cost-monitor.yml`)
+**Trigger**: Weekly schedule (Mondays 9 AM) or manual dispatch  
+**Purpose**: Monitors AWS costs to prevent unexpected charges
+
+**What it does:**
+- **Cost Retrieval**: Gets current month AWS spending
+- **Threshold Checking**: Alerts if costs exceed $5
+- **Free Tier Protection**: Ensures you stay within AWS Free Tier limits
+
+**Key Features:**
+- **Automated Scheduling**: Weekly cost checks
+- **Threshold Alerts**: Warnings when approaching limits
+- **Manual Trigger**: On-demand cost checking
+- **GitHub Warnings**: Visible alerts in Actions tab
+
+### 5. **Security Scanning** (`security-scan.yml`)
+**Trigger**: Push/PR to main, weekly schedule, or manual dispatch  
+**Purpose**: Scans for vulnerabilities and secrets in the codebase
+
+**What it does:**
+- **Vulnerability Scanning**: Uses Trivy to scan for security issues
+- **Secret Detection**: Uses TruffleHog to find exposed credentials
+- **SARIF Upload**: Integrates with GitHub Security tab
+- **Continuous Monitoring**: Regular security health checks
+
+**Key Features:**
+- **Multiple Scan Types**: File system and secret scanning
+- **GitHub Integration**: Results appear in Security tab
+- **Scheduled Scans**: Weekly automated security checks
+- **SARIF Format**: Industry-standard security reporting
+
+## Workflow Dependencies and Interactions
+
+```mermaid
+graph TD
+    A[Developer Push] --> B{Target Branch?}
+    B -->|main| C[Branch Protection - BLOCKS]
+    B -->|feature| D[Create PR]
+    D --> E[Terraform Validation]
+    E --> F[Security Scan]
+    F --> G[PR Review]
+    G --> H[Merge to Main]
+    H --> I[Website Deployment]
+    I --> J[Cost Monitor - Weekly]
+    
+    K[Schedule] --> L[Security Scan - Weekly]
+    K --> J
+```
+
+## Required GitHub Configuration
+
+### Repository Secrets
+- `AWS_ROLE_ARN`: IAM role ARN for GitHub OIDC authentication
+
+### Repository Variables  
+- `BUCKET_NAME`: S3 bucket name for website hosting
+- `AWS_REGION`: AWS region (defaults to us-east-1)
+
+### GitHub Environments (Optional)
+- `production`: For production deployments
+- `staging`: For staging deployments (if using multi-environment setup)
+
 ### How to Use
 
 #### Option 1: Automated Deployment with Terraform (preffered)
