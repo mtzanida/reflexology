@@ -1,5 +1,6 @@
 ## GitHub Repository Description
 
+
 **Public Website for Reflexologist – Built with AWS Serverless Services**
 
 This repository contains the code and resources for a modern, responsive website for a professional reflexologist. The site is designed to present services, information about reflexology, and contact details in a clean and accessible way.
@@ -22,6 +23,7 @@ This repository provides a complete Infrastructure-as-Code solution with automat
 ├── .pre-commit-config.yaml # Cost monitoring and validation hooks
 └── README.md          # This documentation
 ```
+
 
 ### Features
 
@@ -58,13 +60,14 @@ This repository provides a complete Infrastructure-as-Code solution with automat
 
 #### Option 2: Manual Setup
 
+=======
 1. **Clone the repository** and edit `index.html` with your own contact details.
 2. **Upload the files** (`index.html`, `style.css`, images) to your S3 bucket.
 3. **Configure S3** for static website hosting and set permissions for public read access.
 4. (Optional) **Set up CloudFront and ACM** for HTTPS and custom domain support.
 5. **Go live!** Your site is now publicly accessible.
 
-### Zero-Cost Hosting Guide 
+
 
 You can host this website completely free within AWS Free Tier:
 
@@ -134,6 +137,7 @@ If you own a custom domain and want to use it with your reflexology website, fol
      - Create an A record with Alias pointing to your CloudFront distribution
    - If using another DNS provider:
      - Create a CNAME record pointing to your CloudFront distribution domain name
+
 
 4. **Cost Considerations**:
    - CloudFront: First 1TB of data transfer out per month is free in the AWS Free Tier
