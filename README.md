@@ -1,8 +1,29 @@
-## GitHub Repository Description Example
+## GitHub Repository Description
+
 
 **Public Website for Reflexologist – Built with AWS Serverless Services**
 
 This repository contains the code and resources for a modern, responsive website for a professional reflexologist. The site is designed to present services, information about reflexology, and contact details in a clean and accessible way.
+
+### How This Repository Works
+
+This repository provides a complete Infrastructure-as-Code solution with automated deployment and cost monitoring:
+
+- **Terraform Configuration**: Automatically provisions AWS resources (S3, CloudFront, ACM certificates)
+- **GitHub Actions**: Deploys website files to S3 bucket on every push to main branch
+- **Pre-commit Hooks**: Monitors AWS usage to ensure you stay within Free Tier limits
+- **Cost Protection**: Automated checks prevent unexpected charges by validating resource usage
+
+### Repository Structure
+
+```
+├── bucket-contents/     # Website files (HTML, CSS, images)
+├── terraform/          # Infrastructure-as-Code configuration
+├── .github/workflows/  # GitHub Actions for automated deployment
+├── .pre-commit-config.yaml # Cost monitoring and validation hooks
+└── README.md          # This documentation
+```
+
 
 ### Features
 
@@ -24,13 +45,29 @@ This repository contains the code and resources for a modern, responsive website
 
 ### How to Use
 
+#### Option 1: Automated Deployment with Terraform (preffered)
+
+1. **Clone the repository** and edit website files in `bucket-contents/` with your details.
+2. **Configure Terraform**:
+   - Navigate to the `terraform/` directory
+   - Update `terraform/tfvars/main.tfvars` with your values
+   - The tfvars directory structure supports multiple environments (e.g., `dev.tfvars`, `staging.tfvars`, `prod.tfvars`)
+   - Run `terraform init` to initialize
+   - Run `terraform plan -var-file="tfvars/main.tfvars"` to review changes
+   - Run `terraform apply -var-file="tfvars/main.tfvars"` to deploy infrastructure
+3. **Upload website files**: The Terraform configuration will create the S3 bucket and upload your website files automatically.
+4. **Go live!** Your site is now publicly accessible.
+
+#### Option 2: Manual Setup
+
+=======
 1. **Clone the repository** and edit `index.html` with your own contact details.
 2. **Upload the files** (`index.html`, `style.css`, images) to your S3 bucket.
 3. **Configure S3** for static website hosting and set permissions for public read access.
 4. (Optional) **Set up CloudFront and ACM** for HTTPS and custom domain support.
 5. **Go live!** Your site is now publicly accessible.
 
-### Zero-Cost Hosting Guide
+
 
 You can host this website completely free within AWS Free Tier:
 
@@ -99,7 +136,8 @@ If you own a custom domain and want to use it with your reflexology website, fol
      - Create a hosted zone for your domain
      - Create an A record with Alias pointing to your CloudFront distribution
    - If using another DNS provider:
-     - Create a CNAME record pointing to your CloudFront distribution domain name (e.g., `d1234abcdef.cloudfront.net`)
+     - Create a CNAME record pointing to your CloudFront distribution domain name
+
 
 4. **Cost Considerations**:
    - CloudFront: First 1TB of data transfer out per month is free in the AWS Free Tier
@@ -120,8 +158,8 @@ This setup provides several advantages over the basic S3 hosting:
 
 ### Demo
 
-A live demo is available at:  
-`http://your-s3-bucket-endpoint`  
+A live demo is available at:
+`http://your-s3-bucket-endpoint`
 (or your custom domain, if configured)
 
 Feel free to fork, modify, and use this template for your own professional website!
