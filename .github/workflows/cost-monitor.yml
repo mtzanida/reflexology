@@ -12,16 +12,16 @@ jobs:
       id-token: write
       contents: read
       issues: write
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
-    
+
     - name: Check AWS Costs
       run: |
         # Get current month costs
@@ -31,9 +31,9 @@ jobs:
           --metrics BlendedCost \
           --query 'ResultsByTime[0].Total.BlendedCost.Amount' \
           --output text)
-        
+
         echo "Current month costs: \$${CURRENT_COSTS}"
-        
+
         # Alert if costs exceed $5
         if (( $(echo "$CURRENT_COSTS > 5" | bc -l) )); then
           echo "⚠️ WARNING: Costs exceed \$5 threshold!"

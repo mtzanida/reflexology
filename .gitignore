@@ -2,8 +2,13 @@
 .terraform/
 *.tfstate
 *.tfstate.*
+*.tfstate.backup
+*.tfplan
 .terraform.lock.hcl
-terraform.tfvars
+
+# tfvars — keep example files, ignore real values
+terraform/tfvars/*.tfvars
+!terraform/tfvars/*.tfvars.example
 
 # macOS
 .DS_Store
@@ -16,12 +21,13 @@ Thumbs.db
 
 # IDE
 .vscode/
+.idea/
 *.swp
 *.swo
 
 # Logs
 *.log
 
-# Environment variables
+# Environment / secrets
 .env
-.env.local
+.env.*

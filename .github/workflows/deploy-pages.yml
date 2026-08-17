@@ -1,0 +1,49 @@
+name: Deploy to GitHub Pages (dev)
+
+on:
+  push:
+    branches: ["dev"]
+    paths:
+      - "bucket-contents/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: dev
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate site files
+        run: |
+          if [ ! -f "bucket-contents/index.html" ]; then
+            echo "❌ bucket-contents/index.html not found"
+            exit 1
+          fi
+          FILE_COUNT=$(find bucket-contents -type f | wc -l)
+          echo "✅ Found $FILE_COUNT files to deploy"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: bucket-contents
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -2,32 +2,45 @@ module "iam_github_oidc_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-github-oidc-role"
   version = "~> 5.0"
 
-  name = "github-actions-role"
+  name = "github-actions-reflexology-role"
 
-  subjects = ["repo:${var.github_repo}:ref:refs/heads/main"]
+  # Scoped to the prod branch — only prod deployments can assume this role.
+  subjects = ["repo:${var.github_repo}:ref:refs/heads/prod"]
 
   policies = {
-    S3Access = aws_iam_policy.s3_access.arn
+    S3Deploy = aws_iam_policy.s3_deploy.arn
   }
 }
 
-resource "aws_iam_policy" "s3_access" {
-  name = "s3-website-access"
+resource "aws_iam_policy" "s3_deploy" {
+  name        = "reflexology-s3-deploy"
+  description = "Allows GitHub Actions to sync the site to S3 and invalidate CloudFront"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "S3Sync"
         Effect = "Allow"
         Action = [
           "s3:PutObject",
           "s3:DeleteObject",
-          "s3:ListBucket"
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
         ]
         Resource = [
           module.s3_bucket.s3_bucket_arn,
           "${module.s3_bucket.s3_bucket_arn}/*"
         ]
+      },
+      {
+        Sid    = "CloudFrontInvalidation"
+        Effect = "Allow"
+        Action = [
+          "cloudfront:CreateInvalidation",
+          "cloudfront:ListDistributions"
+        ]
+        Resource = "*"
       }
     ]
   })
