@@ -7,19 +7,24 @@ module "s3_bucket" {
   website = {
     index_document = "index.html"
   }
+}
 
-  attach_policy = true
+# Separate bucket policy to avoid circular dependency
+resource "aws_s3_bucket_policy" "website" {
+  bucket     = module.s3_bucket.s3_bucket_id
+  depends_on = [module.cloudfront]
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowCloudFrontServicePrincipal"
-        Effect    = "Allow"
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
         Principal = {
           Service = "cloudfront.amazonaws.com"
         }
-        Action    = "s3:GetObject"
-        Resource  = "arn:aws:s3:::${var.bucket_name}/*"
+        Action   = "s3:GetObject"
+        Resource = "arn:aws:s3:::${var.bucket_name}/*"
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = module.cloudfront.cloudfront_distribution_arn

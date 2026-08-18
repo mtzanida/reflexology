@@ -25,9 +25,16 @@ module "cloudfront" {
     compress               = true
   }
 
+  # Use your custom domain once the ACM certificate is ready.
+  # Uncomment the two lines below and fill in your values, then run terraform apply.
+  # aliases            = [var.domain_name]
+  # viewer_certificate = { acm_certificate_arn = var.certificate_arn, ssl_support_method = "sni-only" }
+
   default_root_object = "index.html"
-  price_class         = "PriceClass_100"
-  
+
+  # PriceClass_100 = US, Canada, Europe only — cheapest option.
+  price_class = "PriceClass_100"
+
   custom_error_response = [
     {
       error_code         = 404

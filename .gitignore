@@ -2,8 +2,14 @@
 .terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
-terraform.tfvars
+*.tfstate.backup
+*.tfplan
+# .terraform.lock.hcl is intentionally committed — it locks provider versions
+# for reproducible builds and prevents supply chain attacks.
+
+# tfvars — keep example files, ignore real values
+terraform/tfvars/*.tfvars
+!terraform/tfvars/*.tfvars.example
 
 # macOS
 .DS_Store
@@ -16,12 +22,13 @@ Thumbs.db
 
 # IDE
 .vscode/
+.idea/
 *.swp
 *.swo
 
 # Logs
 *.log
 
-# Environment variables
+# Environment / secrets
 .env
-.env.local
+.env.*

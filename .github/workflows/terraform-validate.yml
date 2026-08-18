@@ -1,0 +1,45 @@
+name: Terraform Validation
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+  push:
+    branches: ["dev", "prod"]
+    paths:
+      - "terraform/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Terraform Validate
+        run: |
+          cd terraform
+          terraform validate
+
+      - name: Terraform Plan (prod tfvars, informational)
+        run: |
+          cd terraform
+          terraform plan -var-file="tfvars/prod.tfvars" -no-color
+        continue-on-error: true

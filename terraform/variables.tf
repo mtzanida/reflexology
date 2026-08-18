@@ -5,11 +5,25 @@ variable "aws_region" {
 }
 
 variable "bucket_name" {
-  description = "S3 bucket name for static website"
+  description = "Globally unique S3 bucket name for the static website"
   type        = string
 }
 
 variable "github_repo" {
-  description = "GitHub repository in format owner/repo"
+  description = "GitHub repository in 'owner/repo' format (for OIDC trust policy)"
   type        = string
+}
+
+# ── Custom domain (optional, enable after ACM certificate is issued) ──────────
+
+variable "domain_name" {
+  description = "Custom domain for CloudFront, e.g. yourdomain.com. Leave empty to use the CloudFront domain."
+  type        = string
+  default     = ""
+}
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for the custom domain. Must be in us-east-1 (CloudFront requirement)."
+  type        = string
+  default     = ""
 }

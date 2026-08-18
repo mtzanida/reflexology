@@ -1,0 +1,106 @@
+name: Deploy to S3 + CloudFront (prod)
+
+on:
+  push:
+    branches: ["prod"]
+    paths:
+      - "bucket-contents/**"
+      - ".github/workflows/deploy-s3.yml"
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: s3-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required configuration
+        run: |
+          if [ -z "${{ secrets.AWS_ROLE_ARN }}" ]; then
+            echo "❌ AWS_ROLE_ARN secret is not set in the 'production' GitHub environment"
+            exit 1
+          fi
+          if [ -z "${{ vars.BUCKET_NAME }}" ]; then
+            echo "❌ BUCKET_NAME variable is not set in the 'production' GitHub environment"
+            exit 1
+          fi
+          echo "✅ All required secrets and variables are configured"
+
+      - name: Validate site files
+        run: |
+          if [ ! -f "bucket-contents/index.html" ]; then
+            echo "❌ bucket-contents/index.html not found"
+            exit 1
+          fi
+          FILE_COUNT=$(find bucket-contents -type f | wc -l)
+          echo "✅ Found $FILE_COUNT files to deploy"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate S3 bucket exists
+        run: |
+          echo "🔍 Validating S3 bucket: ${{ vars.BUCKET_NAME }}"
+          if ! aws s3api head-bucket --bucket "${{ vars.BUCKET_NAME }}" 2>/dev/null; then
+            echo "❌ Bucket '${{ vars.BUCKET_NAME }}' not found or not accessible"
+            echo "Run 'terraform apply -var-file=tfvars/prod.tfvars' first"
+            exit 1
+          fi
+          echo "✅ S3 bucket is accessible"
+
+      - name: Sync site to S3
+        run: |
+          echo "🚀 Syncing to s3://${{ vars.BUCKET_NAME }}"
+          aws s3 sync bucket-contents/ s3://${{ vars.BUCKET_NAME }} \
+            --delete \
+            --exact-timestamps \
+            --exclude ".DS_Store"
+
+          # Confirm index.html made it
+          aws s3api head-object --bucket "${{ vars.BUCKET_NAME }}" --key "index.html" > /dev/null
+          echo "✅ S3 sync complete"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+            --query "DistributionList.Items[?Origins.Items[0].DomainName=='${{ vars.BUCKET_NAME }}.s3.${{ env.AWS_REGION }}.amazonaws.com'].Id" \
+            --output text)
+
+          if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" = "None" ]; then
+            echo "⚠️  No CloudFront distribution found — skipping invalidation"
+          else
+            echo "🔄 Invalidating CloudFront distribution: $DISTRIBUTION_ID"
+            INVALIDATION_ID=$(aws cloudfront create-invalidation \
+              --distribution-id "$DISTRIBUTION_ID" \
+              --paths "/*" \
+              --query 'Invalidation.Id' \
+              --output text)
+            echo "✅ Invalidation created: $INVALIDATION_ID (propagates in 5–15 min)"
+          fi
+
+      - name: Deployment summary
+        run: |
+          echo "🎉 Production deployment complete!"
+          echo "Bucket : s3://${{ vars.BUCKET_NAME }}"
+          echo "Region : ${{ env.AWS_REGION }}"
+          if [ -n "${{ vars.DOMAIN_NAME }}" ]; then
+            echo "URL    : https://${{ vars.DOMAIN_NAME }}"
+          fi
