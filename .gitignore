@@ -4,7 +4,8 @@
 *.tfstate.*
 *.tfstate.backup
 *.tfplan
-.terraform.lock.hcl
+# .terraform.lock.hcl is intentionally committed — it locks provider versions
+# for reproducible builds and prevents supply chain attacks.
 
 # tfvars — keep example files, ignore real values
 terraform/tfvars/*.tfvars

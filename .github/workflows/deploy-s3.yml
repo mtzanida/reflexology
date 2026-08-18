@@ -81,7 +81,7 @@ jobs:
       - name: Invalidate CloudFront cache
         run: |
           DISTRIBUTION_ID=$(aws cloudfront list-distributions \
-            --query "DistributionList.Items[?Origins.Items[0].DomainName=='${{ vars.BUCKET_NAME }}.s3.amazonaws.com'].Id" \
+            --query "DistributionList.Items[?Origins.Items[0].DomainName=='${{ vars.BUCKET_NAME }}.s3.${{ env.AWS_REGION }}.amazonaws.com'].Id" \
             --output text)
 
           if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" = "None" ]; then

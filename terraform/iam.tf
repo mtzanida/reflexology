@@ -26,7 +26,8 @@ resource "aws_iam_policy" "s3_deploy" {
           "s3:PutObject",
           "s3:DeleteObject",
           "s3:ListBucket",
-          "s3:GetBucketLocation"
+          "s3:GetBucketLocation",
+          "s3:HeadObject"
         ]
         Resource = [
           module.s3_bucket.s3_bucket_arn,
@@ -34,13 +35,21 @@ resource "aws_iam_policy" "s3_deploy" {
         ]
       },
       {
+        # ListDistributions needs * — it is an account-level action with no resource ARN.
+        # CreateInvalidation and GetInvalidation are scoped to the specific distribution.
+        Sid      = "CloudFrontList"
+        Effect   = "Allow"
+        Action   = ["cloudfront:ListDistributions"]
+        Resource = "*"
+      },
+      {
         Sid    = "CloudFrontInvalidation"
         Effect = "Allow"
         Action = [
           "cloudfront:CreateInvalidation",
-          "cloudfront:ListDistributions"
+          "cloudfront:GetInvalidation"
         ]
-        Resource = "*"
+        Resource = module.cloudfront.cloudfront_distribution_arn
       }
     ]
   })
