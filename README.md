@@ -1,64 +1,26 @@
 # Reflexology Website
 
-A responsive, Greek-language website presenting Theodoros Koutris's reflexology
-practice in Thessaloniki. Visitors can learn about the practitioner and services,
-read testimonials, find contact details, call to arrange an appointment, and send
-an enquiry through a contact form.
+A Greek-language static website for Theodoros Koutris's reflexology practice in Thessaloniki, presenting services, testimonials and contact information.
 
-## What the project includes
-
-- A static HTML website with responsive navigation, images and client-side JavaScript.
-- Tailwind CSS and Lucide icons loaded from external CDNs.
-- A contact form that submits directly to Formspree.
-- GitHub Actions deployment workflows for GitHub Pages and AWS.
-- Terraform definitions for S3, CloudFront and the deployment IAM role.
-
-The published entry point is `bucket-contents/index.html`. The deployment workflows
-upload the contents of that directory directly; they do not build the included
-`page.tsx` file. There is no application server or database in this repository.
+**Status:** Includes site files, Terraform definitions and deployment workflows. The configured paths are GitHub Pages for dev and S3/CloudFront for prod; live deployment is not verified by this README.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    Repo["GitHub repository"]
-    PagesDeploy["GitHub Actions: dev deployment"]
-    AWSDeploy["GitHub Actions: prod deployment"]
-    Pages["GitHub Pages preview"]
-    Bucket[("Private S3 bucket")]
-    CDN["CloudFront"]
-    Browser["Visitor browser"]
-    Form["Formspree"]
-    Assets["Tailwind CSS and Lucide CDNs"]
-    Terraform["Terraform"]
-    Repo -->|"dev: website changes"| PagesDeploy
-    Repo -->|"prod: website changes"| AWSDeploy
-    PagesDeploy -->|"Publish static files"| Pages
-    AWSDeploy -->|"OIDC role: sync files"| Bucket
-    AWSDeploy -->|"Request cache invalidation"| CDN
-    Terraform -.->|"Provision"| Bucket
-    Terraform -.->|"Provision"| CDN
-    Browser -->|"Preview requests"| Pages
-    Browser -->|"Production HTTPS requests"| CDN
-    CDN -->|"Signed origin requests using OAC"| Bucket
-    Browser -->|"Submit contact form"| Form
-    Browser -->|"Load styles and icons"| Assets
+  Source["Static HTML, CSS and images"] --> Actions["GitHub Actions"]
+  Actions -->|dev branch| Pages["GitHub Pages"]
+  Actions -->|prod branch and AWS OIDC| S3["Private S3 site bucket"]
+  Visitor["Visitor browser"] --> Pages
+  Visitor --> CDN["CloudFront"]
+  CDN -->|origin access control| S3
+  Visitor -->|contact form| Form["Formspree"]
+  Terraform["Terraform definitions"] -.-> S3
+  Terraform -.-> CDN
 ```
 
-CloudFront serves the production site from an S3 origin protected by Origin Access
-Control and a distribution-scoped bucket policy. Public S3 access is blocked.
-GitHub Pages provides a separate preview path without requiring AWS.
+## Start here
 
-The diagram describes the repository configuration, not a verification of live
-deployments. Custom-domain and ACM settings are optional and currently commented
-out in the CloudFront configuration.
+Preview with `python3 -m http.server 8000 --directory bucket-contents`. Review [bucket-contents/index.html](bucket-contents/index.html), [terraform/](terraform/) and [docs/SETUP.md](docs/SETUP.md) before configuring deployment. The contact form submits to Formspree; this repository contains no appointment-booking backend.
 
-## Repository overview
-
-| Location | Purpose |
-| --- | --- |
-| [bucket-contents/](bucket-contents/) | Static website and supporting assets |
-| [terraform/](terraform/) | AWS infrastructure definitions |
-| [.github/workflows/](.github/workflows/) | Deployment, validation, security and cost-check workflows |
-| [.spacelift/config.yml](.spacelift/config.yml) | Spacelift configuration |
-| [docs/SETUP.md](docs/SETUP.md) | Local preview, setup, deployment and troubleshooting instructions |
+[Previous README and detailed reference](https://github.com/mtzanida/reflexology/blob/fb756c2a719c7ab5caef7fcd941998d2baf8fe6f/README.md) are retained in Git history. They may describe older assumptions or unmerged plans; the scope above reflects this branch.
